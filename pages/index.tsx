@@ -22,7 +22,7 @@ export type Post = {
     title: string | null;
     slug: string | null;
     createdTs: string | null;
-    ladtEditedTs: string | null;
+    lastEditedTs: string | null;
     contents: Content[];
 };
 
