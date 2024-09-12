@@ -12,13 +12,14 @@ type StaticPathsParams = {
 
 export const getStaticPaths: GetStaticPaths<StaticPathsParams> = async () => {
     const posts = await getPosts();
-    const paths: { paths: { slug: string} }[] = [];
+    const paths: { params: { slug: string} }[] = [];
     posts.forEach((post) => {
         const slug = post.slug;
         if (slug) {
             paths.push({params: { slug }});
         }
     });
+    //return {paths, fallback: 'blocking'};
     return {paths, fallback: 'blocking'};
 }
 
