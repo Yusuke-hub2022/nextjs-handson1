@@ -26,6 +26,11 @@ export type Post = {
     contents: Content[];
 };
 
+interface PageObjectResponse {
+    created_time: string;
+    last_edited_time: string;
+};
+
 const notion = new Client({
     auth: process.env.NOTION_TOKEN,
 });
@@ -59,8 +64,8 @@ export const getPosts = async (slug?: string) => {
         },
         sorts: [
             {
-            timestamp: "created_time",
-            direction: "descending",
+                timestamp: "created_time",
+                direction: "descending",
             },
         ],
         });
@@ -68,43 +73,53 @@ export const getPosts = async (slug?: string) => {
     if (!database) return [];
 
     const posts: Post[] = [];
+    //console.log(database.results);
     const blockResponses = await Promise.all(
         database.results.map((page) => {
-        return notion.blocks.children.list({
-            block_id: page.id,
-        });
-        })
-    );
+            return notion.blocks.children.list({
+                block_id: page.id,
+            });
+        }
+    ));
     database.results.forEach((page, index) => {
         if (!("properties" in page)) {
         return {
             props: {
-            post: {
-                id: page.id,
-                title: null,
-                slug: null,
-                createdTs: null,
-                ladtEditedTs: null,
-                contents: [],
-            },
+                post: {
+                    id: page.id,
+                    title: null,
+                    slug: null,
+                    createdTs: null,
+                    ladtEditedTs: null,
+                    contents: [],
+                },
             },
         };
         }
         let title: string | null = null;
         if (page.properties["Name"].type === "title") {
-        title = page.properties["Name"].title[0]?.plain_text ?? null;
+        //title = page.properties["Name"].title[0]?.plain_text ?? null;
+        title = page.properties["Name"].title.shift()?.plain_text ?? null;
         }
         let slug: string | null = null;
         if (page.properties["Slug"].type === "rich_text") {
-        slug = page.properties["Slug"].rich_text[0]?.plain_text ?? null;
+        slug = page.properties["Slug"].rich_text.shift()?.plain_text ?? null;
+        }
+        let createdTs: string = "-";
+        if ("created_time" in page) {
+            createdTs = page.created_time;
+        }
+        let lastEditedTs: string = "-";
+        if ("last_edited_time" in page) {
+            lastEditedTs = page.last_edited_time;
         }
         posts.push({
-        id: page.id,
-        title,
-        slug,
-        createdTs: page.created_time,
-        ladtEditedTs: page.last_edited_time,
-        contents: [],
+            id: page.id,
+            title,
+            slug,
+            createdTs,
+            lastEditedTs,
+            contents: [],
         });
     });
     return posts;
@@ -119,7 +134,11 @@ export const getPostContents = async (post: Post) => {
         if (!"type in block") {
         return;
         }
-        switch (block.type) {
+        let type: string = '';
+        if ("type" in block) {
+            type = block.type;
+        }
+        switch (type) {
         case "paragraph":
             contents.push({
             type: "paragraph",
