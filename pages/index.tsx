@@ -2,7 +2,7 @@ import { Client } from "@notionhq/client";
 import { GetStaticProps, NextPage } from "next";
 import prism from "prismjs";
 import { useEffect } from "react";
-import { QueryDatabaseResponse, ParagraphBlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { QueryDatabaseResponse, BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { Layout } from "../lib/component/Layout";
 import { PostComponent } from "../lib/component/Post";
 
@@ -160,14 +160,60 @@ export const getPosts = async (slug?: string) => {
 }
 */
 
+type Block = {
+    object: string;
+    id: string;
+    parent: {
+        type: string;
+        page_id: string;
+    };
+    created_time: string;
+    last_edited_time: string;
+    created_by: {
+        object: string;
+        id: string;
+    };
+    last_edited_by: {
+        object: string;
+        id: string;
+    };
+    has_children: Boolean;
+    archived: Boolean;
+    in_trash: Boolean;
+    type: string;
+    quote: {
+        rich_text: [
+            {
+                type: string;
+                text: {
+                    content: string;
+                    link: string | null;
+                };
+                annotations: {
+                    bold: boolean;
+                    italic: boolean;
+                    strikethrough: boolean;
+                    underline: boolean;
+                    code: boolean;
+                    color: string;
+                },
+                plain_text: string;
+                href: string | null;
+            }
+        ],
+        color: string;
+    };
+};
+
 export const getPostContents = async (post: Post) => {
     const blockResponses = await notion.blocks.children.list({
         block_id: post.id,
     });
     const contents: Content[] = [];
     blockResponses.results.forEach((block) => {
-        if (!"type in block") {
-        return;
+        // @ts-ignore
+        if (! "type" in block) {
+            return;
         }
         let type: string = '';
         if ("type" in block) {
