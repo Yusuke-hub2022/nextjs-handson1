@@ -160,51 +160,6 @@ export const getPosts = async (slug?: string) => {
 }
 */
 
-type Block = {
-    object: string;
-    id: string;
-    parent: {
-        type: string;
-        page_id: string;
-    };
-    created_time: string;
-    last_edited_time: string;
-    created_by: {
-        object: string;
-        id: string;
-    };
-    last_edited_by: {
-        object: string;
-        id: string;
-    };
-    has_children: Boolean;
-    archived: Boolean;
-    in_trash: Boolean;
-    type: string;
-    quote: {
-        rich_text: [
-            {
-                type: string;
-                text: {
-                    content: string;
-                    link: string | null;
-                };
-                annotations: {
-                    bold: boolean;
-                    italic: boolean;
-                    strikethrough: boolean;
-                    underline: boolean;
-                    code: boolean;
-                    color: string;
-                },
-                plain_text: string;
-                href: string | null;
-            }
-        ],
-        color: string;
-    };
-};
-
 export const getPostContents = async (post: Post) => {
     const blockResponses = await notion.blocks.children.list({
         block_id: post.id,
