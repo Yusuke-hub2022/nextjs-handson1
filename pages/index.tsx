@@ -174,7 +174,7 @@ export const getPostContents = async (post: Post) => {
         if ("type" in block) {
             type = block.type;
         }
-        console.dir(block, {depth: null});
+        //console.dir(block, {depth: null});
         switch (type) {
         case "paragraph":
             contents.push({
